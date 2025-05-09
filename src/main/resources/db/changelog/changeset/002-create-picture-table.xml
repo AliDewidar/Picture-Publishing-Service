@@ -1,0 +1,49 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="Create_Picture_Table_00000000002" author="ali">
+        <createTable tableName="pictures">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_pictures_id" nullable="false"/>
+            </column>
+            <column name="description" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_path" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID"/>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="pictures"
+                baseColumnNames="user_id"
+                constraintName="fk_picture_user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"/>
+
+        <sql>
+            ALTER TABLE pictures ADD CONSTRAINT chk_category CHECK (category IN ('ANIMALS', 'ARCHITECTURE', 'PEOPLE'));
+        </sql>
+
+        <sql>
+            ALTER TABLE pictures ADD CONSTRAINT chk_status CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED'));
+        </sql>
+
+        <rollback>
+            <dropTable tableName="pictures"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

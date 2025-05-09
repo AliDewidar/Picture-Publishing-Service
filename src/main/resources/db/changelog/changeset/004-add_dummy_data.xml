@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="Add_Dummy_Data_00000000004" author="ali">
+        <insert tableName="admins">
+            <column name="id" value="aac0c6c6-e011-4caf-a1ab-69b8fde41053"/>
+            <column name="username" value="admin"/>
+            <column name="password" value="admin123"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="admins">
+                <where> id = 'aac0c6c6-e011-4caf-a1ab-69b8fde41053'</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

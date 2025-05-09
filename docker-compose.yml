@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: picture_publishing_service
+    ports:
+      - "5432:5432"
+    networks:
+      - picture-publishing-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: picture-publishing-service_container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - picture-publishing-network
+
+networks:
+  picture-publishing-network:
+
+volumes:
+  postgres_data:
+
