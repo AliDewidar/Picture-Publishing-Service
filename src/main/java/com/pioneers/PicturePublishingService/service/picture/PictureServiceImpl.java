@@ -5,7 +5,6 @@ import com.pioneers.PicturePublishingService.dao.PictureRepository;
 import com.pioneers.PicturePublishingService.dao.UserRepository;
 import com.pioneers.PicturePublishingService.error.exception.PictureNotFound;
 import com.pioneers.PicturePublishingService.error.exception.UserNotFound;
-import com.pioneers.PicturePublishingService.error.exception.UserNotLoggedIn;
 import com.pioneers.PicturePublishingService.mapper.PictureMapper;
 import com.pioneers.PicturePublishingService.model.dto.PictureDto;
 import com.pioneers.PicturePublishingService.model.entities.Picture;
@@ -23,7 +22,8 @@ import java.util.UUID;
 
 import static com.pioneers.PicturePublishingService.mapper.PictureMapper.toPicture;
 import static com.pioneers.PicturePublishingService.mapper.PictureMapper.toPictureResponse;
-import static com.pioneers.PicturePublishingService.utils.Utils.generateUrlFromFilePath;
+import static com.pioneers.PicturePublishingService.utils.AuthUtil.validateUserIsLoggedIn;
+import static com.pioneers.PicturePublishingService.utils.FileUtil.generateUrlFromFilePath;
 
 @Slf4j
 @Service
@@ -35,7 +35,6 @@ public class PictureServiceImpl implements PictureService {
     private final FileStorageService fileStorageService;
     private final FileStorageProperties properties;
 
-
     @Override
     public PictureResponse uploadPicture(PictureDto pictureDto) {
         // Save file and get relative path
@@ -44,9 +43,7 @@ public class PictureServiceImpl implements PictureService {
         Picture picture = toPicture(pictureDto, fileName);
         User user = userRepository.findByEmail(pictureDto.getUserEmail())
                         .orElseThrow(() -> new UserNotFound("email not found with email: " + pictureDto.getUserEmail()));
-        if (!user.isLoggedIn()) {
-            throw new UserNotLoggedIn("you must be logged in to upload a picture");
-        }
+        validateUserIsLoggedIn(user);
 
         picture.setUser(user);
         pictureRepository.save(picture);
@@ -55,6 +52,7 @@ public class PictureServiceImpl implements PictureService {
 
         return toPictureResponse(picture, fileUrl);
     }
+
 
 
     @Override
@@ -97,5 +95,4 @@ public class PictureServiceImpl implements PictureService {
         pictureRepository.save(picture);
         log.info("Picture rejected successfully");
     }
-
 }

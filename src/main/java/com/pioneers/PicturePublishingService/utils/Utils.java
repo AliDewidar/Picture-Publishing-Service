@@ -11,10 +11,6 @@ import org.springframework.http.ResponseEntity;
 @UtilityClass
 public class Utils {
 
-    public static String generateUrlFromFilePath(String fileName) {
-        return "http://localhost:8080/uploads/" + fileName;
-    }
-
     public static ResponseEntity<ErrorResponse> buildErrorResponse(BaseCustomException e, HttpStatus status) {
         ErrorResponse errorResponse = new ErrorResponse(e.getCode(), e.getMessage(), e.getDescription());
         return new ResponseEntity<>(errorResponse, status);

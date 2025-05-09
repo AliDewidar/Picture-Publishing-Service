@@ -25,10 +25,11 @@ services:
       - postgres
     networks:
       - picture-publishing-network
+    volumes:
+      - ./uploads:/app/uploads
 
 networks:
   picture-publishing-network:
 
 volumes:
   postgres_data:
-
