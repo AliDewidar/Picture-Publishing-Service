@@ -6,7 +6,6 @@ import com.pioneers.PicturePublishingService.error.exception.InvalidFileTypeExce
 import lombok.experimental.UtilityClass;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,47 +17,69 @@ import java.util.UUID;
 @UtilityClass
 public class FileUtil {
 
-    private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/gif");
+    private final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/pjpeg", "image/png", "image/gif");
+    private final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpeg",".jpg", ".png", ".gif");
+    String INVALID_TYPE_MSG = "Only image files with extensions jpg, png, gif are allowed";
 
-    public static void validateFileSize(MultipartFile file, long maxSize) {
+    public void validateFile(MultipartFile file, long maxSize) {
         Objects.requireNonNull(file, "File must not be null");
 
         if (file.getSize() > maxSize) {
             throw new FileSizeExceededException("File size exceeds the maximum allowed size of 2MB");
         }
-    }
-
-    public static void validateFileType(MultipartFile file) {
-        Objects.requireNonNull(file, "File must not be null");
 
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
-            throw new InvalidFileTypeException("Only JPG, PNG, and GIF files are allowed");
+            throw new InvalidFileTypeException(INVALID_TYPE_MSG);
+        }
+
+        String originalFilename = extractOriginalFileName(file);
+
+        String extension = extractExtension(originalFilename).toLowerCase();
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new InvalidFileTypeException(INVALID_TYPE_MSG);
         }
     }
 
-    public static void createDirectoryIfNotExists(String uploadDir) {
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
+    public String extractOriginalFileName(MultipartFile file) {
+        Objects.requireNonNull(file, "File must not be null");
+
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || fileName.isBlank()) {
+            throw new FileStorageException("Original filename must not be null or empty");
+        }
+        return fileName;
+    }
+
+    public void createDirectoryIfNotExists(String uploadDir) throws IOException {
+        Path dirPath = Path.of(uploadDir);
+        if (Files.notExists(dirPath)) {
+            Files.createDirectories(dirPath);
         }
     }
 
-    public static String extractExtension(String filename) {
-        Objects.requireNonNull(filename, "Filename must not be null");
+    public String extractExtension(String filename) {
+        if (filename == null || filename.isBlank()) {
+            throw new FileStorageException("Filename must not be null or empty");
+        }
+
         int dotIndex = filename.lastIndexOf('.');
-        return (dotIndex != -1) ? filename.substring(dotIndex) : "";
+        if (dotIndex == -1 || dotIndex == filename.length() - 1) {
+            throw new FileStorageException("Filename must have a valid extension");
+        }
+
+        return filename.substring(dotIndex);
     }
 
-    public static String generateUniqueFileName(String extension) {
+    public String generateUniqueFileName(String extension) {
         return UUID.randomUUID() + extension;
     }
 
-    public static Path buildPath(String uploadDir, String filename) {
+    public Path buildPath(String uploadDir, String filename) {
         return Path.of(uploadDir, filename);
     }
 
-    public static void copyFile(MultipartFile file, Path destination, String originalFilename) {
+    public void copyFile(MultipartFile file, Path destination, String originalFilename) {
         try {
             Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
@@ -66,7 +87,7 @@ public class FileUtil {
         }
     }
 
-    public static String generateUrlFromFilePath(String fileName) {
+    public String generateUrlFromFilePath(String fileName) {
         return "http://localhost:8080/uploads/" + fileName;
     }
 }
