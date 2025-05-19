@@ -2,7 +2,6 @@ package com.pioneers.PicturePublishingService.error;
 
 import com.pioneers.PicturePublishingService.error.exception.*;
 import com.pioneers.PicturePublishingService.error.model.ErrorResponse;
-import jdk.dynalink.beans.StaticClass;
 import liquibase.exception.LiquibaseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
