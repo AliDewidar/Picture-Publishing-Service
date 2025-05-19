@@ -15,15 +15,15 @@ import com.pioneers.PicturePublishingService.service.fileStorage.FileStorageServ
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-import static com.pioneers.PicturePublishingService.mapper.PictureMapper.toPicture;
-import static com.pioneers.PicturePublishingService.mapper.PictureMapper.toPictureResponse;
+import static com.pioneers.PicturePublishingService.mapper.PictureMapper.*;
 import static com.pioneers.PicturePublishingService.utils.AuthUtil.validateUserIsLoggedIn;
-import static com.pioneers.PicturePublishingService.utils.FileUtil.generateUrlFromFilePath;
 
 @Slf4j
 @Service
@@ -36,24 +36,23 @@ public class PictureServiceImpl implements PictureService {
     private final FileStorageProperties properties;
 
     @Override
-    public PictureResponse uploadPicture(PictureDto pictureDto) {
+    public PictureResponse uploadPicture(PictureDto pictureDto) throws IOException {
+
+        User user = userRepository.findByEmail(pictureDto.getUserEmail())
+                .orElseThrow(() -> new UserNotFound("email not found with email: " + pictureDto.getUserEmail()));
+
+        validateUserIsLoggedIn(user);
+
         // Save file and get relative path
         String fileName = fileStorageService.saveFile(pictureDto.getFile());
 
         Picture picture = toPicture(pictureDto, fileName);
-        User user = userRepository.findByEmail(pictureDto.getUserEmail())
-                        .orElseThrow(() -> new UserNotFound("email not found with email: " + pictureDto.getUserEmail()));
-        validateUserIsLoggedIn(user);
 
         picture.setUser(user);
         pictureRepository.save(picture);
 
-        String fileUrl = generateUrlFromFilePath(fileName);
-
-        return toPictureResponse(picture, fileUrl);
+        return mapToResponse(picture);
     }
-
-
 
     @Override
     public List<PictureResponse> getAllPendingPictures() {
