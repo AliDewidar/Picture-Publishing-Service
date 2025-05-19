@@ -1,5 +1,6 @@
 package com.pioneers.PicturePublishingService.config;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -9,11 +10,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    private FileStorageProperties fileStorageProperties;
+    private final FileStorageProperties properties;
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + fileStorageProperties.getUploadDir() + "/");
+                .addResourceLocations("file:" + properties.getUploadDir() + "/");
     }
 }
