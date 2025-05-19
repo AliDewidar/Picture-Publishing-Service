@@ -6,7 +6,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class UserMapper {
-    public static User toUser(UserDto userDto) {
+    public User toUser(UserDto userDto) {
         return User.builder()
                 .email(userDto.getEmail())
                 .password(userDto.getPassword())
