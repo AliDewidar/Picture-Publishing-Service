@@ -3,15 +3,13 @@ package com.pioneers.PicturePublishingService.service.auth;
 import com.pioneers.PicturePublishingService.dao.UserRepository;
 import com.pioneers.PicturePublishingService.error.exception.UserAlreadyExists;
 import com.pioneers.PicturePublishingService.error.exception.UserNotFound;
+import com.pioneers.PicturePublishingService.mapper.UserMapper;
 import com.pioneers.PicturePublishingService.model.dto.UserDto;
 import com.pioneers.PicturePublishingService.model.entities.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
-import static com.pioneers.PicturePublishingService.mapper.UserMapper.toUser;
 import static com.pioneers.PicturePublishingService.utils.ValidationClass.isPasswordMatched;
 
 @Slf4j
@@ -23,13 +21,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void register(UserDto userDto) {
-        Optional<User> existingStudent = userRepository.findByEmail(userDto.getEmail());
+        userRepository.findByEmail(userDto.getEmail())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExists("User already exists with email: " + userDto.getEmail());
+                });
 
-        existingStudent.ifPresent(user -> {
-            throw new UserAlreadyExists("User with email " + userDto.getEmail() + " already exists, please login");
-        });
-
-        User newUser = toUser(userDto);
+        User newUser = UserMapper.toUser(userDto);
         newUser.setLoggedIn(false);
         userRepository.save(newUser);
 
